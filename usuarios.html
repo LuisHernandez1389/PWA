@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/css/bootstrap.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+
+    <title>Usuarios</title>
+</head>
+
+<body>
+
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark" aria-label="Offcanvas navbar large">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#">Dashboard</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar2" aria-controls="offcanvasNavbar2" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="offcanvas offcanvas-end text-bg-dark" tabindex="-1" id="offcanvasNavbar2" aria-labelledby="offcanvasNavbar2Label">
+        <div class="offcanvas-header">
+          <h5 class="offcanvas-title" id="offcanvasNavbar2Label">Offcanvas</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body">
+          <ul class="navbar-nav justify-content-end flex-grow-1 pe-3">
+            <li class="nav-item">
+              <a class="nav-link active" aria-current="page" href="../index.html">Home</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="./eventos.html">Eventos</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="./ordenes.html">Ordenes</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="./usuarios.html">Usuarios</a>
+              </li>
+          </ul>
+          <form class="d-flex mt-3 mt-lg-0" role="search">
+            <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+            <button class="btn btn-outline-success" type="submit">Search</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </nav>
+  <div class="bg-dark text-secondary px-4 py-5 text-center">
+    <div class="py-5">
+      <h1 class="display-5 fw-bold text-white">Lista de Usuarios</h1>
+      <div class="col-lg-6 mx-auto">
+
+      </div>
+    </div>
+  </div>
+  <br/>
+
+  <div class="container">
+    <div class="row" id="users-container">
+      <!-- Aquí se llenarán las tarjetas de usuarios -->
+    </div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyCTOaMQC0i5lZ249nnTrJa8bQ1ch3UGiGw",
+      authDomain: "finalmovilintegral.firebaseapp.com",
+      projectId: "finalmovilintegral",
+      storageBucket: "finalmovilintegral.appspot.com",
+      messagingSenderId: "252307449265",
+      appId: "1:252307449265:web:f7ae16bf2267723d1fc990"
+    };
+
+    // Inicializa Firebase
+    firebase.initializeApp(firebaseConfig);
+
+    // Obtiene una referencia a tu base de datos
+    const database = firebase.database();
+
+    // Referencia a la ubicación de los datos que deseas obtener
+    const ref = database.ref('/users');
+
+    // Referencia al contenedor de las tarjetas de usuarios
+    const usersContainer = document.getElementById('users-container');
+
+    // Lee los datos una vez
+    ref.once('value')
+      .then(snapshot => {
+        // Obtiene los datos del snapshot
+        const data = snapshot.val();
+
+        // Itera sobre los usuarios y crea tarjetas para cada uno
+        for (const userId in data) {
+          const user = data[userId];
+          const card = document.createElement('div');
+          card.classList.add('card', 'mb-3', 'col-md-6'); // Agrega la clase col-md-6 aquí
+
+          const cardImg = document.createElement('img');
+          cardImg.src = user.photoURL;
+          cardImg.alt = 'Foto del usuario';
+          cardImg.classList.add('card-img-top');
+
+          const cardBody = document.createElement('div');
+          cardBody.classList.add('card-body');
+
+          const cardTitle = document.createElement('h5');
+          cardTitle.classList.add('card-title');
+          cardTitle.textContent = `${user.nombre} ${user.apellido}`;
+
+          const cardText1 = document.createElement('p');
+          cardText1.classList.add('card-text');
+          cardText1.textContent = `Dirección: ${user.direccion}`;
+
+          const cardText2 = document.createElement('p');
+          cardText2.classList.add('card-text');
+          cardText2.textContent = `Número de Teléfono: ${user.numeroTelefono}`;
+
+          usersContainer.appendChild(card);
+          card.appendChild(cardImg);
+          card.appendChild(cardBody);
+          cardBody.appendChild(cardTitle);
+          cardBody.appendChild(cardText1);
+          cardBody.appendChild(cardText2);
+        }
+      })
+      .catch(error => {
+        console.error('Error al obtener los datos:', error);
+      });
+  </script>
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('../ServiceWorker.js')
+        .then(function(registration) {
+          console.log('Service Worker registrado con éxito:', registration);
+        })
+        .catch(function(error) {
+          console.log('Error al registrar el Service Worker:', error);
+        });
+    }
+  </script>
+
+</body>
+</html>

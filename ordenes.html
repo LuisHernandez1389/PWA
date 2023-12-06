@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/css/bootstrap.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+    
+<title>Ordenes</title>
+<style>
+  .nested-table {
+      margin-top: 10px;
+  }
+
+  .action-buttons {
+      display: flex;
+      justify-content: space-around;
+      margin-top: 10px;
+  }
+</style>
+</head>
+    
+<body>
+
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark" aria-label="Offcanvas navbar large">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#">Dashboard</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar2" aria-controls="offcanvasNavbar2" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="offcanvas offcanvas-end text-bg-dark" tabindex="-1" id="offcanvasNavbar2" aria-labelledby="offcanvasNavbar2Label">
+        <div class="offcanvas-header">
+          <h5 class="offcanvas-title" id="offcanvasNavbar2Label">Offcanvas</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body">
+          <ul class="navbar-nav justify-content-end flex-grow-1 pe-3">
+            <li class="nav-item">
+              <a class="nav-link active" aria-current="page" href="../index.html">Home</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="./eventos.html">Eventos</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="./ordenes.html">Ordenes</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="./usuarios.html">Usuarios</a>
+              </li>
+
+          </ul>
+          <form class="d-flex mt-3 mt-lg-0" role="search">
+            <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+            <button class="btn btn-outline-success" type="submit">Search</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </nav>
+  <div class="bg-dark text-secondary px-4 py-5 text-center">
+    <div class="py-5">
+      <h1 class="display-5 fw-bold text-white">Lista de Ordenes</h1>
+      <div class="col-lg-6 mx-auto">
+
+      </div>
+    </div>
+  </div>
+  <div >
+    <div style="display: flex;
+    justify-content: center;
+    text-align: center;">
+      <h2 style="width: 50%;">Pendientes</h2>
+      <h2 style="width: 50%;">Atendidas</h2>
+    </div>
+    <br/>
+    <div class="row justify-content-around">
+      <div class="col-md-5" id="ordenes-pendientes">
+        
+      </div>
+      <div class="col-md-5" id="ordenes-atendidas">
+        
+      </div>
+    </div>
+  </div>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+  
+  
+  <script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyCTOaMQC0i5lZ249nnTrJa8bQ1ch3UGiGw",
+        authDomain: "finalmovilintegral.firebaseapp.com",
+        projectId: "finalmovilintegral",
+        storageBucket: "finalmovilintegral.appspot.com",
+        messagingSenderId: "252307449265",
+        appId: "1:252307449265:web:f7ae16bf2267723d1fc990"
+    };
+  
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+    const ref = database.ref('/ordenes');
+    const ordenesPendientesContainer = document.getElementById('ordenes-pendientes');
+    const ordenesAtendidasContainer = document.getElementById('ordenes-atendidas');
+
+    ref.on('value', snapshot => {
+      ordenesPendientesContainer.innerHTML = '';
+      ordenesAtendidasContainer.innerHTML = '';
+
+      snapshot.forEach(childSnapshot => {
+        const orden = childSnapshot.val();
+
+   
+        const card = document.createElement('div');
+        card.classList.add('card', 'mb-3');
+
+        const cardHeader = document.createElement('h5');
+        cardHeader.classList.add('card-header');
+        cardHeader.textContent = `Orden ID: ${orden.id}`;
+        card.appendChild(cardHeader);
+
+        const cardBody = document.createElement('div');
+        cardBody.classList.add('card-body');
+
+        const cardTitle = document.createElement('h5');
+        cardTitle.classList.add('card-title');
+        cardTitle.textContent = `Total: ${orden.total}`;
+        cardBody.appendChild(cardTitle);
+
+        const cardText = document.createElement('p');
+        cardText.classList.add('card-text');
+        cardText.innerHTML = `
+          <strong>Atendido:</strong> ${orden.atendido ? 'Sí' : 'No'}<br>
+          <strong>Usuario:</strong> ${orden.usuario.nombre} ${orden.usuario.apellido}<br>
+          <strong>Email:</strong> ${orden.usuario.email}<br>
+          <strong>Dirección:</strong> ${orden.usuario.direccion}<br>
+          <strong>Teléfono:</strong> ${orden.usuario.numeroTelefono}
+        `;
+        cardBody.appendChild(cardText);
+
+        const productosTable = document.createElement('table');
+        productosTable.classList.add('table', 'table-striped', 'nested-table');
+        const productosBody = document.createElement('tbody');
+
+        orden.productosDetalles.forEach(detalle => {
+          const detalleRow = document.createElement('tr');
+          detalleRow.innerHTML = `
+            <td><strong>Nombre:</strong> ${detalle.nombre}</td>
+            <td><strong>Cantidad:</strong> ${detalle.cantidad}</td>
+            <td><strong>Precio:</strong> ${detalle.precio}$</td>
+          `;
+          productosBody.appendChild(detalleRow);
+        });
+
+        productosTable.appendChild(productosBody);
+        const productosCell = document.createElement('td');
+        productosCell.appendChild(productosTable);
+        cardBody.appendChild(productosCell);
+
+
+        const actionButtons = document.createElement('div');
+        actionButtons.classList.add('action-buttons');
+
+        const atenderButton = document.createElement('button');
+        atenderButton.classList.add('btn', 'btn-primary');
+        atenderButton.textContent = 'Atender';
+        atenderButton.addEventListener('click', () => moverAAtendidos(orden));
+
+        const devolverButton = document.createElement('button');
+        devolverButton.classList.add('btn', 'btn-primary');
+        devolverButton.textContent = 'Devolver';
+        devolverButton.addEventListener('click', () => moverADesatendidos(orden));
+
+        const eliminarButton = document.createElement('button');
+        eliminarButton.classList.add('btn', 'btn-danger');
+        eliminarButton.textContent = 'Eliminar';
+        eliminarButton.addEventListener('click', () => eliminarOrden(orden));
+
+        actionButtons.appendChild(atenderButton);
+        actionButtons.appendChild(devolverButton);
+        actionButtons.appendChild(eliminarButton);
+
+        cardBody.appendChild(actionButtons);
+
+
+        card.appendChild(cardBody);
+
+
+        if (orden.atendido) {
+          ordenesAtendidasContainer.appendChild(card);
+        } else {
+          ordenesPendientesContainer.appendChild(card);
+        }
+      });
+    });
+
+    function moverAAtendidos(orden) {
+      const ordenRef = ref.child(orden.id);
+      ordenRef.update({ atendido: true });
+    }
+
+    function moverADesatendidos(orden) {
+      const ordenRef = ref.child(orden.id);
+      ordenRef.update({ atendido: false });
+    }
+
+    function eliminarOrden(orden) {
+      const ordenRef = ref.child(orden.id);
+      ordenRef.remove();
+    }
+  </script>
+
+
+
+</html>
