@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/css/bootstrap.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>    
+<style>
+
+</style>
+<title>Prueba</title>
+
+</head>
+
+
+    
+<body>
+
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark" aria-label="Offcanvas navbar large">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#">Dashboard</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar2" aria-controls="offcanvasNavbar2" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="offcanvas offcanvas-end text-bg-dark" tabindex="-1" id="offcanvasNavbar2" aria-labelledby="offcanvasNavbar2Label">
+        <div class="offcanvas-header">
+          <h5 class="offcanvas-title" id="offcanvasNavbar2Label">Offcanvas</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body">
+          <ul class="navbar-nav justify-content-end flex-grow-1 pe-3">
+            <li class="nav-item">
+              <a class="nav-link active" aria-current="page" href="#">Home</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="./pages/eventos.html">Eventos</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="./pages/ordenes.html">Ordenes</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="./pages/usuarios.html">Usuarios</a>
+            </li>
+
+          </ul>
+          <form class="d-flex mt-3 mt-lg-0" id="searchForm">
+            <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" id="searchInput">
+            <button class="btn btn-outline-success" type="submit">Search</button>
+          </form>
+          
+        </div>
+      </div>
+    </div>
+  </nav>
+  
+  <div class="container mt-5">
+
+    <div class="row">
+      <div class="col-md-4">
+        <div class="card text-bg-primary custom-card">
+          <div class="card-header">Eventos</div>
+          <div class="card-body">
+            <h5 class="card-title">Eventos Disponibles</h5>
+            <p class="card-text">Muestra la lista de eventos disponibles ademas de su estado.</p>
+            <a href="./pages/eventos.html" class="btn btn-primary">Ver Eventos</a>
+          </div>
+        </div>
+      </div>
+
+      <div  class="col-md-4">
+        <div class="card text-bg-success custom-card">
+          <div class="card-header">Órdenes</div>
+          <div class="card-body">
+            <h5 class="card-title">Órdenes Pendientes</h5>
+            <p class="card-text">Verifica y gestiona las órdenes pendientes de atención.</p>
+            <a href="./pages/ordenes.html" class="btn btn-success">Ver Órdenes</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="card text-bg-info custom-card">
+          <div class="card-header">Usuarios</div>
+          <div class="card-body">
+            <h5 class="card-title">Lista de Usuarios</h5>
+            <p class="card-text">Explora la lista de usuarios registrados en la aplicación.</p>
+            <a href="./pages/usuarios.html" class="btn btn-info">Ver Usuarios</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row mt-5">
+      <div class="col-md-12">
+        <canvas id="myChart" style="width: 100%;"></canvas>
+      </div>
+    </div>
+  </div>
+
+  
+  
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+  
+  <script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyCTOaMQC0i5lZ249nnTrJa8bQ1ch3UGiGw",
+        authDomain: "finalmovilintegral.firebaseapp.com",
+        projectId: "finalmovilintegral",
+        storageBucket: "finalmovilintegral.appspot.com",
+        messagingSenderId: "252307449265",
+        appId: "1:252307449265:web:f7ae16bf2267723d1fc990"
+    };
+  
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+
+    function obtenerNumeroRegistros(categoria, callback) {
+      const ref = database.ref(categoria);
+      ref.once('value')
+        .then(snapshot => {
+          const numeroRegistros = snapshot.numChildren();
+          callback(numeroRegistros);
+        })
+        .catch(error => {
+          console.error(`Error al obtener datos de ${categoria}:`, error);
+        });
+    }
+
+    const categorias = ['eventos', 'ordenes', 'users'];
+    const datosDinamicos = [];
+
+    categorias.forEach((categoria, index) => {
+      obtenerNumeroRegistros(categoria, numeroRegistros => {
+        datosDinamicos[index] = numeroRegistros;
+
+        if (datosDinamicos.length === categorias.length) {
+          actualizarGrafico(datosDinamicos);
+        }
+      });
+    });
+
+    function actualizarGrafico(datos) {
+      const barChartData = {
+        labels: categorias,
+        datasets: [{
+          label: 'Número de Datos',
+          data: datos,
+          backgroundColor: [
+            'rgba(75, 192, 192, 0.2)',
+            'rgba(255, 99, 132, 0.2)',
+            'rgba(255, 206, 86, 0.2)',
+          ],
+          borderColor: [
+            'rgba(75, 192, 192, 1)',
+            'rgba(255, 99, 132, 1)',
+            'rgba(255, 206, 86, 1)',
+          ],
+          borderWidth: 1
+        }]
+      };
+      console.log(datos)
+      const ctx = document.getElementById('myChart').getContext('2d');
+      const myChart = new Chart(ctx, {
+        type: 'bar',
+        data: barChartData,
+        options: {
+          scales: {
+            y: {
+              beginAtZero: true
+            }
+          }
+        }
+      });
+    }
+    
+  </script>
+                <script>
+                  if ('serviceWorker' in navigator) {
+                    navigator.serviceWorker.register('ServiceWorker.js')
+                    .then(function(registration) {
+                      console.log('Service Worker registrado con éxito:', registration);
+                    })
+                    .catch(function(error) {
+                      console.log('Error al registrar el Service Worker:', error);
+                    });
+                  }
+                </script>
+
+<script>
+  document.getElementById('searchForm').addEventListener('submit', function (event) {
+    event.preventDefault();
+
+    const searchTerm = document.getElementById('searchInput').value;
+
+
+    buscarEnFirebase(searchTerm);
+  });
+
+  function buscarEnFirebase(termino) {
+  const ref = database.ref('/users'); 
+  ref.orderByChild('nombre').equalTo(termino).once('value')
+    .then(snapshot => {
+
+      const resultados = snapshot.val();
+      console.log('Resultados de la búsqueda:', resultados);
+    })
+    .catch(error => {
+      console.error('Error al realizar la búsqueda en Firebase:', error);
+    });
+}
+
+</script>
+<script>
+  document.getElementById('searchForm').addEventListener('submit', function (event) {
+    event.preventDefault();
+
+    const searchTerm = document.getElementById('searchInput').value;
+
+
+    buscarEnFirebase(searchTerm);
+  });
+
+  function buscarEnFirebase(termino) {
+    const ref = database.ref('/users');
+    ref.orderByChild('nombre').equalTo(termino).once('value')
+      .then(snapshot => {
+        const resultados = snapshot.val();
+
+      
+        actualizarModal(resultados);
+
+       
+        const modal = new bootstrap.Modal(document.getElementById('searchResultsModal'));
+        modal.show();
+      })
+      .catch(error => {
+        console.error('Error al realizar la búsqueda en Firebase:', error);
+      });
+  }
+
+  function actualizarModal(resultados) {
+    const modalBody = document.getElementById('searchResultsBody');
+    modalBody.innerHTML = '';
+
+    if (resultados) {
+      
+      for (const key in resultados) {
+        if (resultados.hasOwnProperty(key)) {
+          const usuario = resultados[key];
+          const usuarioInfo = `<img style="width: 270px; height: 270px; " src="${usuario.photoURL}" />
+          
+          <p><strong>${usuario.nombre}</strong>: ${usuario.numeroTelefono}  , ${usuario.direccion}</p>`;
+          modalBody.innerHTML += usuarioInfo;
+        }
+      }
+    } else {
+     
+      modalBody.innerHTML = '<p>No se encontraron resultados.</p>';
+    }
+  }
+</script>
+
+
+<div class="modal" tabindex="-1" role="dialog" id="searchResultsModal">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Resultados de la Búsqueda</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div style="justify-content: center;   text-align: center; align-items: center;" class="modal-body" id="searchResultsBody">
+       
+      </div>
+    </div>
+  </div>
+</div>
+
+  </body>
+  
+
+
+</html>
